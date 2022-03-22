@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="C. Frigolett C." />
+
+
+<title>Homicide Victims Study</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<script src="site_libs/kePrint-0.0.1/kePrint.js"></script>
+<link href="site_libs/lightable-0.0.1/lightable.css" rel="stylesheet" />
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+<link rel="stylesheet" href="styles.css" type="text/css" />
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 51px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h2 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h3 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h4 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h5 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h6 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Generalized Linear Models with R</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Homicide Victims Study</h1>
+<h4 class="author">C. Frigolett C.</h4>
+<h4 class="date">22-03-2022</h4>
+
+</div>
+
+<div id="TOC">
+<ul>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#exploratory-data-analysis">Exploratory Data Analysis</a></li>
+<li><a href="#poisson-model">Poisson Model</a></li>
+<li><a href="#diagnostics">Diagnostics</a></li>
+<li><a href="#negative-binomial-model">Negative Binomial Model</a></li>
+<li><a href="#quasi-likelihood-model">Quasi-likelihood Model</a></li>
+<li><a href="#conclusion">Conclusion</a></li>
+</ul>
+</div>
+
+<div style="text-align: justify">
+
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<p>We are going to analyze data coming from a survey of 1308 peoplewhere participants were asked to report their race (black or white) and how many homicide victims they know. The scientific question of interest is: “Does race help explain how many homicide victims a person knows?”.We do not have available the exact wording of the original question asked to participants, however, for the purpose of our analysis we are going to assume that the number of known homicide victims was asked with reference to a precise timeframe (e.g., “How many homicide victims have you known in the past year?”).In the next sections we are going to use different generalized linear models to provide an answer. We will use number of known victims as outcome variable and race(black or white)as predictor variable.</p>
+</div>
+<div id="exploratory-data-analysis" class="section level2">
+<h2>Exploratory Data Analysis</h2>
+<p>The total sample size consists of 1308 people and it is divided into groups of159 black peopleand 1149 whitepeople. Our sample contains a larger number of whitepeoplethan blackpeople,which may be consistent witha sample from a population where blackpeopleare a minority. The number of known homicide victims ranges from zero to six (Table 1.1), with an average of 0.14 (Var = 0.3). From the bar plot in Figure 1.1 we can see a larger prevalence of zero known victims compared to any other value for both races.</p>
+<table class=" lightable-material lightable-striped lightable-hover" style='font-family: "Source Sans Pro", helvetica, sans-serif; margin-left: auto; margin-right: auto;'>
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+black
+</th>
+<th style="text-align:right;">
+white
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+0
+</td>
+<td style="text-align:right;">
+119
+</td>
+<td style="text-align:right;">
+1070
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:right;">
+16
+</td>
+<td style="text-align:right;">
+60
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2
+</td>
+<td style="text-align:right;">
+12
+</td>
+<td style="text-align:right;">
+14
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+3
+</td>
+<td style="text-align:right;">
+7
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+5
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+6
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+</tbody>
+</table>
+<div class="figure" style="text-align: center">
+<img src="index_files/figure-html/graph%20of%20counts-1.png" alt="Figure 1.1" width="672" />
+<p class="caption">
+Figure 1.1
+</p>
+</div>
+<p>A scatter plot of the data set, with added jitter, is presented in Figure 1.2. It is clear that black people have larger variation for the response variable than white people. The sample variance is calculated for each group, resulting in 1.15 for black people and 0.16 for white people. The sample means present large differences as well: 0.522 for black peopleand 0.092 for white people. We hereby also note that the mean and variance take on quite different values, this aspect will become important in the subsequent analysis.</p>
+<div class="figure" style="text-align: center">
+<img src="index_files/figure-html/scatterplot%20by%20race-1.png" alt="Figure 1.2" width="672" />
+<p class="caption">
+Figure 1.2
+</p>
+</div>
+</div>
+<div id="poisson-model" class="section level2">
+<h2>Poisson Model</h2>
+<p>In order to study whether race can explain the number of known homicide victims, we used a log-linear Poisson regression model with the natural logarithm as link function:</p>
+<h5 align="center">
+<span class="math inline">\(ln\ (E(Y|X))\ =\ \beta_0\ +\ \beta_1\ X\ ,\)</span>
+</h5>
+<p>where <span class="math inline">\(Y\)</span> is the number of known homicide victims and <span class="math inline">\(X\)</span> is the dichotumous variable for race. In other words, we use the following response function to model the expected number of known victims given the race:</p>
+<h5 align="center">
+<span class="math inline">\(E\left(Y\middle| X\right)=\ \lambda=e^{\beta_0\ +\ \beta_1\ X\ }\)</span>
+</h5>
+<p>We assume that observations are independent and that the variation of responses around the mean can be modelled using a Poisson distribution with equal mean and variance parameter <span class="math inline">\(\lambda\)</span>:</p>
+<h5 align="center">
+<span class="math inline">\(Y\ \sim Poisson\ (\lambda)\)</span>
+</h5>
+<p>The last assumption may not be correct in our dataset. As we already noted in the exploratory data analysis, the mean and variance of the outcome variable were not the same. We will come back to this issue in the diagnostics section; for now, we will proceed looking at the results we obtained when fitting this model (Table 1.2).</p>
+<pre><code>## 
+## Call:
+## glm(formula = resp ~ race, family = poisson, data = victim_data)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -1.0218  -0.4295  -0.4295  -0.4295   6.1874  
+## 
+## Coefficients:
+##             Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept)  -0.6501     0.1098  -5.922 3.17e-09 ***
+## racewhite    -1.7331     0.1466 -11.825  &lt; 2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for poisson family taken to be 1)
+## 
+##     Null deviance: 962.80  on 1307  degrees of freedom
+## Residual deviance: 844.71  on 1306  degrees of freedom
+## AIC: 1122
+## 
+## Number of Fisher Scoring iterations: 6</code></pre>
+<p>First, we can see that there is a statistically significant relationship between race and number of known homicide victims as indicated by the Wald test for the null hypothesis <span class="math inline">\(H_0:\ \beta_1=0\)</span>. The likelihood ratio test provides similar conclusion when testing the same null hypothesis <span class="math inline">\((d\left(1\right)=\ 118.09,\ \ p&lt;\ 0.0001)\)</span>. However, this result is only valid if our assumptions are met. This will be checked in the diagnostics section.</p>
+<p>A more informative way to interpret the association between race and the outcome variable is provided by the risk ratio. The risk ratio denotes how much larger or smaller is the risk of knowing homicide victims for a white person compared to a black person. The risk ratio is 0.18 with 95% confidence interval (0.13-0.24). Considering the point estimate, whites have 0.18 times the risk of knowing homicide victims compared to black people. In other words, white people have an 82% reduction in risk of knowing homicide victims compared to black people. As indicated by the confidence interval, the reduction in risk of knowing homicide victims for white people compared to black people ranges between 76% and 87%. Note that the risk ratio can be readily obtained from the model’s coefficient for race: <span class="math inline">\(e^{\widehat{\beta_1}\ \ }=\ e^{-1.73\ \ }=0.18\)</span> or as the ratio between the mean response for white people and the mean response for black people:</p>
+<h5 align="center">
+<span class="math inline">\(\ \frac{{\hat{\lambda}}_{white}}{{\hat{\lambda}}_{black}}=\ \frac{e^{\widehat{\beta_0}\ +\ \widehat{\beta_1}\ \ }}{e^{\widehat{\beta_0}\ \ }}=\ \frac{e^{-0.65\ \ -1.73\ \ }}{\ e^{-0.65\ \ }}=\ \frac{0.09\ }{0.52}\ =\ 0.18\)</span>
+</h5>
+<p>This implies, that if we would like to express the risk of knowing homicide victims for black people compared to white people, we can reverse the above ratio and calculate the mean of the response for black people divided by the mean response for white people:</p>
+<h5 align="center">
+<span class="math inline">\(\frac{{\hat{\lambda}}_{black}}{{\hat{\lambda}}_{white}}=\ \frac{e^{\widehat{\beta_0}\ \ }}{e^{\widehat{\beta_0}\ +\ \widehat{\beta_1}\ \ }}=\ \frac{e^{-0.65\ \ }}{\ e^{-0.65\ \ -1.73\ \ }}=\ \frac{0.52\ }{0.09}\ =\ 5.66\)</span>
+</h5>
+<p>The risk ratio of 5.66 indicates that the risk of knowing homicide victims for black people is about 5 and a half times larger than the risk of knowing victims for white people.</p>
+</div>
+<div id="diagnostics" class="section level2">
+<h2>Diagnostics</h2>
+<p>To evaluate the fit of our model, we started by comparing the observed frequencies for the distribution of counts and the predicted frequencies (Table 1.3). We can notice some discrepancies, for example the observed frequency of white people who know 1 homicide victim is 60, whereas the fitted frequency is 96.7 people. This can be considered a sign of lack of fit which can be further explored using the rootogram (Figure 1.3). This graph shows how the observed frequencies (vertical bars) should be adjusted to follow the model’s estimation (red points). When the response variable takes values 0, 2, 3 or 4 the model is underestimating the observations, therefore the bars are pulled down. On the other hand, with a response variable of 1 the bar should be pushed up, there should be more observations at 1 for the model to be a good fit. In summary, the rootogram signals that the model is overpredicting and underpredicting every level of the response variable.</p>
+<div class="figure" style="text-align: center">
+<img src="index_files/figure-html/rootogramme-1.png" alt="Figure 1.3" width="672" />
+<p class="caption">
+Figure 1.3
+</p>
+</div>
+<pre><code>##   observed    expected x          y width    height       line
+## 1     1189 1142.081228 0 -0.6871870   0.9 34.481879 33.7946923
+## 2       76  145.904573 1  3.3612986   0.9  8.717798 12.0790965
+## 3       26   17.312091 2 -0.9382394   0.9  5.099020  4.1607801
+## 4       11    2.373673 3 -1.7759520   0.9  3.316625  1.5406728
+## 5        3    0.295041 4 -1.1888740   0.9  1.732051  0.5431768</code></pre>
+<p>We can recognize several problems when analyzing the randomized quantile residuals (as implemented in <code>DHARMa</code>) of the Poisson model (Figure 1.4). Looking at the QQ plot and the Kolmogorov-Smirnov test, there is barely non-significant deviation from uniformity for the simulated residuals. Although, when looking at the plot on the right only one boxplot represents a uniform distribution. Both boxplots should have the median in 0.5, and the first and third quartile in 0.25 and 0.75, respectively. The Outlier test (Figure 1.5) shows there exists outliers, which can be confirmed by analyzing the histogram of the residuals. This histogram shows in red the existence of residuals that belong outside the simulated range of values. Additionally, the histogram of the residuals does not seem uniform.</p>
+<div class="figure" style="text-align: center">
+<img src="index_files/figure-html/Dharma%20residual%20diagnostics%20histogram-1.png" alt="Figure 1.4" width="672" />
+<p class="caption">
+Figure 1.4
+</p>
+</div>
+<div class="figure" style="text-align: center">
+<img src="index_files/figure-html/Dharmaoutlier%20test-1.png" alt="Figure 1.5" width="672" />
+<p class="caption">
+Figure 1.5
+</p>
+</div>
+<pre><code>## 
+##  DHARMa outlier test based on exact binomial test with approximate expectations
+## 
+## data:  sim.model.ab
+## outliers at both margin(s) = 14, observations = 1308, p-value = 6.72e-07
+## alternative hypothesis: true probability of success is not equal to 0.001998002
+## 95 percent confidence interval:
+##  0.005863637 0.017893276
+## sample estimates:
+## frequency of outliers (expected: 0.001998001998002 ) 
+##                                           0.01070336</code></pre>
+<p>One possible explanation to the lack of fit of the Poisson model is dispersion, that is to say, the data show more (or less) variability than what the model predicts. To formally test for dispersion, the nonparametric dispersion test on simulated residuals is shown below (Figure 1.6). The grouped values (in black) shown in the graph are the standard deviation of the simulated residuals. From this test, it can be concluded that there is overdispersion since the observed standard deviation (in red) is higher and not part of the simulated cases.</p>
+<div class="figure" style="text-align: center">
+<img src="index_files/figure-html/test%20of%20dispersion-1.png" alt="Figure 1.6" width="672" />
+<p class="caption">
+Figure 1.6
+</p>
+</div>
+<pre><code>## 
+##  DHARMa nonparametric dispersion test via sd of residuals fitted vs. simulated
+## 
+## data:  simulationOutput
+## dispersion = 1.9091, p-value &lt; 2.2e-16
+## alternative hypothesis: two.sided</code></pre>
+<p>In the next paragraphs we will show two possible solutions to the problem of overdispersion. First, we will use the negative binomial model, which is typically used with overdispersed data and where the variance is modeled as a quadratic function of the mean. Then, we will illustrate another possible solution which uses the Quasi-likelihood model.</p>
+</div>
+<div id="negative-binomial-model" class="section level2">
+<h2>Negative Binomial Model</h2>
+<p>The negative binomial distribution models the number of failures in a sequence of independent Bernoulli trials before reaching a specific number of successes. The mean is characterized by:</p>
+<h5 align="center">
+<span class="math inline">\(E\left(X\right)=\mu=\frac{y\pi}{1-\pi}\)</span>,
+</h5>
+<p>where <span class="math inline">\(y\)</span> is the number of successes and <span class="math inline">\(\pi\)</span> is the probability of success.</p>
+<p>Instead of having equal mean and variance (as in the Poisson model), the negative binomial assumes that the variance is a quadratic function of the mean, scaled by a dispersion parameter (k). If k tends to infinity, the negative binomial converges into a Poisson distribution. The variance of the negative binomial distribution is given by:</p>
+<h5 align="center">
+<span class="math inline">\(Var\left(\ X\right)=\mu\ +\frac{\mu^2}{k}\)</span>,
+</h5>
+<p>where <span class="math inline">\(k\)</span> is the dispersion parameter.</p>
+<pre><code>## 
+## Call:
+## glm.nb(formula = resp ~ race, data = victim_data, init.theta = 0.2023119205, 
+##     link = log)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -0.7184  -0.3899  -0.3899  -0.3899   3.5072  
+## 
+## Coefficients:
+##             Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept)  -0.6501     0.2077  -3.130  0.00175 ** 
+## racewhite    -1.7331     0.2385  -7.268 3.66e-13 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for Negative Binomial(0.2023) family taken to be 1)
+## 
+##     Null deviance: 471.57  on 1307  degrees of freedom
+## Residual deviance: 412.60  on 1306  degrees of freedom
+## AIC: 1001.8
+## 
+## Number of Fisher Scoring iterations: 1
+## 
+## 
+##               Theta:  0.2023 
+##           Std. Err.:  0.0409 
+## 
+##  2 x log-likelihood:  -995.7980</code></pre>
+<p>Table 1.4 summarizes the results of fitting the negative binomial model to our data. Note that, as with the Poisson model, we found a statistically significant relationship between race and number of known homicide victims. Moreover, when considering the AIC, this model has a better fit compared to the Poisson model. Finally, to obtain the variance of each group we plug in the estimated means for each group and the estimated dispersion parameter k into the variance formula, and we obtain:</p>
+<table class=" lightable-material lightable-striped lightable-hover" style='font-family: "Source Sans Pro", helvetica, sans-serif; margin-left: auto; margin-right: auto;'>
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+estimated
+</th>
+<th style="text-align:right;">
+observed
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Black
+</td>
+<td style="text-align:right;">
+1.868928
+</td>
+<td style="text-align:right;">
+1.1498288
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+White
+</td>
+<td style="text-align:right;">
+0.134322
+</td>
+<td style="text-align:right;">
+0.1552448
+</td>
+</tr>
+</tbody>
+</table>
+<p>The estimated variance in this model is closer to the sample variance. The current model no longer assumes the variance to be equal to the mean, thus it is possible to estimate it more accurately. All problems analyzed before in the Poisson model improve when using a negative binomial model (Figure 1.8). The QQ plot and the Kolmogorov-Smirnov test show that uniformity occurs. Additionally, the boxplots have become more similar to those from a uniform distribution. Furthermore, as shown in by the histogram of residuals (Figure 1.9) the number of outliers detected when using this model is greatly reduced.</p>
+<div class="figure" style="text-align: center">
+<img src="index_files/figure-html/Dharma%20residual%20diagnostics%20%20for%20Neg%20Bin%20Model-1.png" alt="Figure 1.8" width="672" />
+<p class="caption">
+Figure 1.8
+</p>
+</div>
+<div class="figure" style="text-align: center">
+<img src="index_files/figure-html/Dharma%20histogram%20for%20Neg%20Bin%20Model-1.png" alt="Figure 1.9" width="672" />
+<p class="caption">
+Figure 1.9
+</p>
+</div>
+<pre><code>## 
+##  DHARMa outlier test based on exact binomial test with approximate expectations
+## 
+## data:  sim.model.nb0
+## outliers at both margin(s) = 15, observations = 1308, p-value = 0.1585
+## alternative hypothesis: true probability of success is not equal to 0.007968127
+## 95 percent confidence interval:
+##  0.006432303 0.018844102
+## sample estimates:
+## frequency of outliers (expected: 0.00796812749003984 ) 
+##                                             0.01146789</code></pre>
+<p>The problem with overdispersion seems to be solved since the observed standard deviation of the residuals falls inside the distribution obtained from simulated values (Figure 1.10). Additionally, the observed value seems to be very close to the median of the standard deviation of the simulated residuals.</p>
+<div class="figure" style="text-align: center">
+<img src="index_files/figure-html/Dispersion%20Plot%20Neg%20Bin%20Model-1.png" alt="Figure 1.10" width="672" />
+<p class="caption">
+Figure 1.10
+</p>
+</div>
+<div class="figure" style="text-align: center">
+<img src="index_files/figure-html/Dispersion%20Plot%20Neg%20Bin%20Model-2.png" alt="Figure 1.10" width="672" />
+<p class="caption">
+Figure 1.10
+</p>
+</div>
+<pre><code>## 
+##  DHARMa nonparametric dispersion test via sd of residuals fitted vs. simulated
+## 
+## data:  simulationOutput
+## dispersion = 0.80912, p-value = 0.508
+## alternative hypothesis: two.sided</code></pre>
+<p>The Rootogram (Figure 1.11) shows better fit than before as well. Overall, the model does a good job of fitting the observed frequencies, although there is room for improvement, especially at 1 (slight overestimation) and 2-3 (slight underestimation).</p>
+<div class="figure" style="text-align: center">
+<img src="index_files/figure-html/rootogramme%20Neg%20Bin%20Model-1.png" alt="Figure 1.11" width="672" />
+<p class="caption">
+Figure 1.11
+</p>
+</div>
+</div>
+<div id="quasi-likelihood-model" class="section level2">
+<h2>Quasi-likelihood Model</h2>
+<p>Another solution to work with overdispersion is to fit a quasi-likelihood model. By using this remedy, we are again distancing ourselves from the assumption of equality between the mean and variance of the Poisson model. In using the quasi-likelihood approach, we now specify them individually with the mean structure as:</p>
+<h5 align="center">
+<span class="math inline">\(E\left(Y\right)=\mu\)</span>
+</h5>
+<p>And the variance as:</p>
+<h5 align="center">
+<span class="math inline">\(var\left(Y\right)=\phi\lambda\)</span>
+</h5>
+<p>Where the dispersion parameter, <span class="math inline">\(\phi\)</span>, is an indicator of the extent of dispersion in the model. It is important to note that the mean must be specified correctly, but it is not required for the variance to be correctly specified. Having fit the model to our data, we arrived at our output below (Table 1.6). Looking at our dispersion parameter we see that its value (1.746) is greater than 1 confirming our evidence that the model is overdispersed. Using that same statistic, we are able to determine that the variance is 74.6% larger than the mean in this quasi-likelihood model.</p>
+<pre><code>## 
+## Call:
+## glm(formula = resp ~ race, family = quasipoisson, data = victim_data)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -1.0218  -0.4295  -0.4295  -0.4295   6.1874  
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  -0.6501     0.1450  -4.482 8.03e-06 ***
+## racewhite    -1.7331     0.1937  -8.950  &lt; 2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for quasipoisson family taken to be 1.745694)
+## 
+##     Null deviance: 962.80  on 1307  degrees of freedom
+## Residual deviance: 844.71  on 1306  degrees of freedom
+## AIC: NA
+## 
+## Number of Fisher Scoring iterations: 6</code></pre>
+<p>As in the previous two models, also here we found a statistically significant relationship between race and number of known homicide victims. Furthermore, we notice that unlike the Poisson model and the negative binomial model here we don’t have a value for the AIC. This is due to the fact that there is no likelihood in quasi models therefore we are unable to calculate an AIC.</p>
+<p>We sought to compare both the negative binomial and quasi-likelihood models through a mean-variance relationship plot. Typically, with this plot we would be able to view the linear relationship of the quasi-likelihood model in comparison with the quadratic relationship of the negative binomial model. However, we only have two points plotted on our graph due to the fact that we are only provided with the mean and variance for two groups (black and white). With the inconclusive plot we decided that it was more effective to evaluate based on the proximity to the observed variance values. Based on the values seen below (Table 1.7), the Quasi-Likelihood is better in the sense of estimating the observed variance. However, it’s important to note that with such few points it’s difficult to gauge its efficiency in making predictions.</p>
+<table class=" lightable-material lightable-striped lightable-hover" style='font-family: "Source Sans Pro", helvetica, sans-serif; margin-left: auto; margin-right: auto;'>
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+Observed
+</th>
+<th style="text-align:right;">
+Negative Binomial
+</th>
+<th style="text-align:right;">
+Quasi-likelihood
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+black
+</td>
+<td style="text-align:right;">
+1.1498288
+</td>
+<td style="text-align:right;">
+1.868928
+</td>
+<td style="text-align:right;">
+0.9112742
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+white
+</td>
+<td style="text-align:right;">
+0.1552448
+</td>
+<td style="text-align:right;">
+0.134322
+</td>
+<td style="text-align:right;">
+0.1610475
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="conclusion" class="section level2">
+<h2>Conclusion</h2>
+<p>Revisiting the original question of this analysis, “Does race help explain how many homicide victims a person knows?”, we see that the Poisson model suggested that race can help explain the number of known homicide victims. However, due to the assumption of equal mean and variance not holding up along with apparent overdispersion we concluded that this model was not sufficient in accurately answering our question. Both the negative binomial model and the quasi-likelihood model revealed to be better choices to model the frequency of known homicide victims as the assumption violations seen earlier were no longer an issue. The findings from both models in line with what we discovered in the Poisson model indicating that race can indeed help explain the number of known homicide victims.</p>
+</div>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

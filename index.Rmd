@@ -1,0 +1,409 @@
+---
+title: "Homicide Victims Study"
+author: "C. Frigolett C."
+date: "22-03-2022"
+output: html_document
+geometry: margin=3.5cm
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+#install.packages(c("ggmosaic","vcd","gap","DHARMa"))
+#install.packages("countreg", repos="http://R-Forge.R-project.org")
+library(readxl)
+library(dplyr)
+library(DHARMa)
+library(gap)
+library(vcd)
+library(lmtest)
+library(countreg)
+library(MASS)
+library(ggplot2)
+library(foreign)
+library(car)
+library(ggmosaic)
+library(sandwich)
+library(kableExtra)
+
+
+#########################################################################
+################################# TASK 1 ################################
+#########################################################################
+
+# risk ratio function
+# https://rpubs.com/kaz_yos/poisson
+glm.RR <- function(GLM.RESULT, digits = 2) {
+
+  if (GLM.RESULT$family$family == "binomial") {
+    LABEL <- "OR"
+  } else if (GLM.RESULT$family$family == "poisson") {
+    LABEL <- "RR"
+  } else {
+    stop("Not logistic or Poisson model")
+  }
+
+  COEF      <- stats::coef(GLM.RESULT)
+  CONFINT   <- stats::confint(GLM.RESULT)
+  TABLE     <- cbind(coef=COEF, CONFINT)
+  TABLE.EXP <- round(exp(TABLE), digits)
+
+  colnames(TABLE.EXP)[1] <- LABEL
+
+  TABLE.EXP
+}
+
+######################################
+########## LOAD THE DATA IN ##########
+######################################
+
+# To import the data:
+
+# Load using txt
+victim_data <- read.table(url("https://github.com/Dansieg91/GLM/raw/main/Dataset/01_victims_data.txt"),header=T)
+
+
+# Load using excel
+# victim_df <- read_excel("Desktop/victimxlsx.xlsx")
+# victim_df[,1] <- NULL
+# victim_df
+# victim_data <- victim_df
+
+```
+
+[//]: # (Justify text for the entire document)
+<div style="text-align: justify">
+
+## Introduction
+
+We  are  going  to  analyze  data  coming  from  a  survey  of  1308  peoplewhere participants  were  asked  to  report  their  race  (black  or  white)  and  how  many  homicide victims  they  know. The scientific question of interest is: “Does race  help  explain  how many homicide victims a person knows?”.We do not have available the exact wording of the original question asked to participants, however, for the purpose of our analysis we are going to assume that the number of known homicide victims was asked with reference to a precise timeframe (e.g., “How many homicide victims have you known in the past year?”).In the next sections we  are going to use different generalized linear  models  to provide an answer. We will use number of known victims as outcome variable and race(black or white)as predictor variable.   
+
+
+## Exploratory Data Analysis
+
+The total sample size consists of 1308 people and it is divided into groups of159 black peopleand 1149 whitepeople. Our sample contains a larger number of whitepeoplethan blackpeople,which may be consistent witha sample from a population where blackpeopleare a minority. The number of known homicide victims ranges from  zero to six (Table 1.1), with an average of 0.14 (Var = 0.3). From the bar plot in Figure 1.1 we can see a larger prevalence of zero known victims compared to any other value for both races. 
+
+```{r tab  of counts,fig.cap='Table 1.1', fig.align='center', echo=FALSE}
+##################################################
+########## EXPLORATORY DATA ANALYSIS #############
+##################################################
+#str(victim_data)
+
+# total count of responses by race
+#table(victim_data$race)
+
+# resp: mean and var
+#mean(victim_data$resp)
+#var(victim_data$resp)
+
+# mean by race
+#with(victim_data, tapply(resp,race,mean))
+
+# variance by race
+#with(victim_data, tapply(resp,race,var))
+
+# frequency table (counts by race)
+tab_count<-table(victim_data$resp, victim_data$race)
+
+tab_count %>%
+  kbl() %>%
+  kable_material(c("striped", "hover"))
+
+```
+```{r graph of counts, fig.cap='Figure 1.1', fig.subcap= c('A figure', 'A table'), fig.align='center', echo=FALSE}
+
+
+# plot the count of victims known by race
+(number_victims_per_race <- ggplot(victim_data, aes(as.factor(resp), fill = race)) +
+    geom_bar(position="dodge") +
+    labs(title = "Frequency of Number of Known Homicide Victims",
+         x = "Number of known victims",
+         y = "Frequency",
+         fill = "Race") +
+    scale_color_manual(name = "Race"))
+```
+
+A scatter plot of the data set, with added jitter, is presented in Figure 1.2. It is clear that black people have larger variation for the response variable than white people. The sample variance is calculated for each group, resulting in 1.15 for black people and 0.16 for  white people.  The  sample  means  present  large  differences  as  well:  0.522  for  black peopleand 0.092 for white people. We hereby also note that the mean and variance take on quite different values, this aspect will become important in the subsequent analysis.
+
+```{r scatterplot by race, fig.cap='Figure 1.2', echo=FALSE, fig.align='center'}
+
+
+# plot the count of victims known by race
+# scatter plot
+(scatterplot_victims <- ggplot(victim_data,aes(race,resp))+
+    geom_point(aes(colour=race),position = "jitter",alpha=0.8)+
+    stat_summary(aes(shape="mean"),fun="mean",geom = "point", color="red",size=4)+
+    labs(title='Scatter Plot', x="Race", y="Number of victims")+
+    scale_shape_manual("", values=c("mean"=19)))
+# save plot for report
+#ggsave("scatterplot_victims.png")
+```
+
+
+## Poisson Model
+
+In order to study whether race can explain the number of known homicide victims, we used a log-linear Poisson regression model with the natural logarithm as link function: 
+
+<h5 align="center">$ln\ (E(Y|X))\ =\ \beta_0\ +\ \beta_1\ X\ ,$</h5>
+
+where $Y$ is the number of known homicide victims and $X$ is the dichotumous variable for race. In other words, we use the following response function to model the expected number of known victims given the race:
+
+<h5 align="center">$E\left(Y\middle| X\right)=\ \lambda=e^{\beta_0\ +\ \beta_1\ X\ }$</h5>
+
+We assume that observations are independent and that the variation of responses around the mean can be modelled using a Poisson distribution with equal mean and variance parameter $\lambda$:
+
+<h5 align="center">$Y\ \sim Poisson\ (\lambda)$</h5>
+
+The last assumption may not be correct in our dataset. As we already noted in the exploratory data analysis, the mean and variance of the outcome variable were not the same. We will come back to this issue in the diagnostics section; for now, we will proceed looking at the results we obtained when fitting this model (Table 1.2).
+
+```{r output poisson model, echo=FALSE, fig.align='center'}
+####################################
+######## POISSON MODEL #########
+####################################
+
+# 1. Fit a Poisson modeL-----
+model.ab <- glm(resp~race, family=poisson, data=victim_data)
+summary(model.ab)
+
+# LR test
+#Anova(model.ab, test = "LR", type = 3)
+#         LR   Chisq Df Pr(>Chisq)
+# race   118.09  1  < 2.2e-16 ***
+
+# 2. Calculate the risk ratio and the corresponding confidence interval -----
+# Risk ratio with function + CI
+#glm.RR(model.ab, 2)
+
+#              RR 2.5 % 97.5 %
+# (Intercept) 0.52  0.42   0.64
+# racewhite   0.18  0.13   0.24
+```
+
+First, we can see that there is a statistically significant relationship between race and number of known homicide victims as indicated by the Wald test for the null hypothesis $H_0:\ \beta_1=0$. The likelihood ratio test provides similar conclusion when testing the same null hypothesis $(d\left(1\right)=\ 118.09,\ \ p<\ 0.0001)$. However, this result is only valid if our assumptions are met. This will be checked in the diagnostics section. 
+
+A more informative way to interpret the association between race and the outcome variable is provided by the risk ratio.   The risk ratio denotes how much larger or smaller is the risk of knowing homicide victims for a white person compared to a black person. The risk ratio is 0.18 with 95% confidence interval (0.13-0.24). Considering the point estimate, whites have 0.18 times the risk of knowing homicide victims compared to black people. In other words, white people have an 82% reduction in risk of knowing homicide victims compared to black people. As indicated by the confidence interval, the reduction in risk of knowing homicide victims for white people compared to black people ranges between 76% and 87%.   Note that the risk ratio can be readily obtained from the model’s coefficient for race: $e^{\widehat{\beta_1}\ \ }=\ e^{-1.73\ \ }=0.18$ or as the ratio between the mean response for white people and the mean response for black people: 
+
+<h5 align="center">$\ \frac{{\hat{\lambda}}_{white}}{{\hat{\lambda}}_{black}}=\ \frac{e^{\widehat{\beta_0}\ +\ \widehat{\beta_1}\ \ }}{e^{\widehat{\beta_0}\ \ }}=\ \frac{e^{-0.65\ \ -1.73\ \ }}{\ e^{-0.65\ \ }}=\ \frac{0.09\ }{0.52}\ =\ 0.18$</h5>
+
+This implies, that if we would like to express the risk of knowing homicide victims for black people compared to white people, we can reverse the above ratio and calculate the mean of the response for black people divided by the mean response for white people: 
+
+<h5 align="center">$\frac{{\hat{\lambda}}_{black}}{{\hat{\lambda}}_{white}}=\ \frac{e^{\widehat{\beta_0}\ \ }}{e^{\widehat{\beta_0}\ +\ \widehat{\beta_1}\ \ }}=\ \frac{e^{-0.65\ \ }}{\ e^{-0.65\ \ -1.73\ \ }}=\ \frac{0.52\ }{0.09}\ =\ 5.66$</h5>
+
+The risk ratio of 5.66 indicates that the risk of knowing homicide victims for black people is about 5 and a half times larger than the risk of knowing victims for white people.
+
+## Diagnostics
+
+To evaluate the fit of our model, we started by comparing the observed frequencies for the distribution of counts and the predicted frequencies (Table 1.3). We can notice some discrepancies, for example the observed frequency of white people who know 1 homicide victim is 60, whereas the fitted frequency is 96.7 people. This can be considered a sign of lack of fit which can be further explored using the rootogram (Figure 1.3). This graph shows how the observed frequencies (vertical bars) should be adjusted to follow the model’s estimation (red points). When the response variable takes values 0, 2, 3 or 4 the model is underestimating the observations, therefore the bars are pulled down. On the other hand, with a response variable of 1 the bar should be pushed up, there should be more observations at 1 for the model to be a good fit. In summary, the rootogram signals that the model is overpredicting and underpredicting every level of the response variable.
+
+```{r observed and predicted table, echo=FALSE, fig.cap='Table 1.3', fig.align='center'}
+#####################################
+######## MODEL PREDICTIONS #########
+#####################################
+
+# 4. Calculate the predictions of the models for each race. ----
+
+## fitted counts for Poisson GLM: ##
+# Original values
+black <- c(119,16,12,7,3,2,0)
+white <- c(1070,60,14,4,0,0,1)
+
+fmeans <- exp(predict(model.ab, newdata = data.frame(race = c("white","black"))))
+
+# predicted values for the observed victins = pois distribution * n (white or black)
+fittedW <- dpois(0:6,lambda = fmeans[1]) * sum(victim_data$race=="white")
+fittedB <- dpois(0:6,lambda = fmeans[2]) * sum(victim_data$race=="black")
+predict_tab<-data.frame(Response=0:6,BlackObs=black, BlackFit=round(fittedB,1), WhiteObs=white, WhiteFit=round(fittedW,1))%>%
+  kbl() %>%
+  kable_material(c("striped", "hover"))
+
+```
+
+
+```{r rootogramme, echo=FALSE,  fig.cap='Figure 1.3', fig.align='center'}
+# Open png file
+#png("poisson_rootogram.png")
+# Poisson rootogram
+(poisson_rootogram <- rootogram(model.ab, ylab='Root Square of Frequency', main='Poisson'))
+```
+
+We can recognize several problems when analyzing the randomized quantile residuals (as implemented in `DHARMa`) of the Poisson model (Figure 1.4). Looking at the QQ plot and the Kolmogorov-Smirnov test, there is barely non-significant deviation from uniformity for the simulated residuals. Although, when looking at the plot on the right only one boxplot represents a uniform distribution. Both boxplots should have the median in 0.5, and the first and third quartile in 0.25 and 0.75, respectively. 
+The Outlier test (Figure 1.5) shows there exists outliers, which can be confirmed by analyzing the histogram of the residuals. This histogram shows in red the existence of residuals that belong outside the simulated range of values. Additionally, the histogram of the residuals does not seem uniform.
+
+```{r Dharma residual diagnostics histogram, echo=FALSE, fig.cap='Figure 1.4', fig.align='center', message=FALSE}
+# DHARMa:Recommended bootstrap with high nSim and nBoot for  ###### CARE TAKES TIME TO COMPUTE ###
+# non-bounded integer-valued distributions:
+set.seed(111)
+sim.model.ab <- simulateResiduals(model.ab, plot=T,n=1000)
+```
+
+```{r Dharmaoutlier test, echo=FALSE, fig.cap='Figure 1.5', fig.align='center', message=FALSE}
+
+testOutliers(sim.model.ab)
+```
+
+
+One possible explanation to the lack of fit of the Poisson model is dispersion, that is to say, the data show more (or less) variability than what the model predicts. To formally test for dispersion, the nonparametric dispersion test on simulated residuals is shown below (Figure 1.6). The grouped values (in black) shown in the graph are the standard deviation of the simulated residuals. From this test, it can be concluded that there is overdispersion since the observed standard deviation (in red) is higher and not part of the simulated cases.
+
+```{r test of dispersion, echo=FALSE, fig.cap='Figure 1.6', fig.align='center', message=FALSE}
+# GOF for dispersion
+testDispersion(sim.model.ab)
+# DHARMa nonparametric dispersion test via sd of residuals fitted vs. simulated
+#
+# data:  simulationOutput
+# ratioObsSim = 1.3831, p-value < 2.2e-16
+# alternative hypothesis: two.sided
+
+```
+
+In the next paragraphs we will show two possible solutions to the problem of overdispersion. First, we will use the negative binomial model, which is typically used with overdispersed data and where the variance is modeled as a quadratic function of the mean. Then, we will illustrate another possible solution which uses the Quasi-likelihood model.
+
+## Negative Binomial Model
+
+The negative binomial distribution models the number of failures in a sequence of independent Bernoulli trials before reaching a specific number of successes. The mean is characterized by: 
+
+<h5 align="center">$E\left(X\right)=\mu=\frac{y\pi}{1-\pi}$,</h5>
+
+where $y$ is the number of successes and $\pi$ is the probability of success.
+
+Instead of having equal mean and variance (as in the Poisson model), the negative binomial assumes that the variance is a quadratic function of the mean, scaled by a dispersion parameter (k). If k tends to infinity, the negative binomial converges into a Poisson distribution. The variance of the negative binomial distribution is given by:
+
+<h5 align="center">$Var\left(\ X\right)=\mu\ +\frac{\mu^2}{k}$,</h5>
+
+where $k$ is the dispersion parameter.
+
+```{r output Neg Bin Model, echo=FALSE, fig.cap="Table 1.4"}
+model.nb <- glm.nb(resp~race, data=victim_data)
+summary(model.nb)
+```
+
+Table 1.4 summarizes the results of fitting the negative binomial model to our data. Note that, as with the Poisson model, we found a statistically significant relationship between race and number of known homicide victims. Moreover, when considering the AIC, this model has a better fit compared to the Poisson model. Finally, to obtain the variance of each group we plug in the estimated means for each group and the estimated dispersion parameter k\ into the variance formula, and we obtain:
+
+```{r output Neg Bin Model Variance, echo=FALSE}
+# N.B. exponentiate the race coefficient to get a ratio of sample means and
+# make predictions to get the original sample means
+fmeans <- exp(predict(model.nb, newdata = data.frame(race = c("black","white"))))
+
+# N.B. estimate of Theta
+#model.nb$theta
+
+#N.B. estimated variances
+estimated<-fmeans + fmeans^2 * (1/model.nb$theta)
+
+#obs Variance
+
+observed<- c(var(victim_data$resp[victim_data$race=="black"]), var(victim_data$resp[victim_data$race=="white"]))
+
+#table
+var_tab<-data.frame(estimated, observed, row.names = c("Black","White"))
+
+var_tab%>%
+  kbl() %>%
+  kable_material(c("striped", "hover"))
+```
+
+The estimated variance in this model is closer to the sample variance. The current model no longer assumes the variance to be equal to the mean, thus it is possible to estimate it more accurately.
+All problems analyzed before in the Poisson model improve when using a negative binomial model (Figure 1.8). The QQ plot and the Kolmogorov-Smirnov test show that uniformity occurs. Additionally, the boxplots have become more similar to those from a uniform distribution. Furthermore, as shown in by the histogram of residuals (Figure 1.9) the number of outliers detected when using this model is greatly reduced.
+
+```{r Dharma residual diagnostics  for Neg Bin Model, echo=FALSE, fig.align='center', fig.cap="Figure 1.8", message=FALSE}
+# N.B. DHARMa residual diagnostics
+sim.model.nb0 <- simulateResiduals(model.nb, plot=T)
+
+# DHARMa bootstrapped outlier test
+#
+# data:  sim.model.nb0
+# outliers at both margin(s) = 3, observations = 1308, p-value = 0.68
+# alternative hypothesis: two.sided
+# percent confidence interval:
+#   0.000764526 0.006116208
+# sample estimates:
+#   outlier frequency (expected: 0.00344036697247706 )
+# 0.002293578
+```
+```{r Dharma histogram for Neg Bin Model, echo=FALSE, fig.align='center', fig.cap="Figure 1.9", message=FALSE}
+# N.B. DHARMa residual diagnostics
+testOutliers(sim.model.nb0)
+# DHARMa bootstrapped outlier test
+#
+# data:  sim.model.nb0
+# outliers at both margin(s) = 3, observations = 1308, p-value = 0.68
+# alternative hypothesis: two.sided
+# percent confidence interval:
+#   0.000764526 0.006116208
+# sample estimates:
+#   outlier frequency (expected: 0.00344036697247706 )
+# 0.002293578
+```
+
+
+The problem with overdispersion seems to be solved since the observed standard deviation of the residuals falls inside the distribution obtained from simulated values (Figure 1.10). Additionally, the observed value seems to be very close to the median of the standard deviation of the simulated residuals.
+
+```{r Dispersion Plot Neg Bin Model, echo=FALSE, fig.align='center', fig.cap="Figure 1.10", message=FALSE}
+# DHARMa:Recommended bootstrap with high nSim and nBoot for
+# non-bounded integer-valued distributions:
+set.seed(112)
+sim.model.nb <- simulateResiduals(model.nb, plot=T,n=1000)
+
+# GOF for dispersion
+testDispersion(sim.model.nb)
+```
+
+The Rootogram (Figure 1.11) shows better fit than before as well. Overall, the model does a good job of fitting the observed frequencies, although there is room for improvement, especially at 1 (slight overestimation) and 2-3 (slight underestimation).
+
+```{r rootogramme Neg Bin Model, echo=FALSE, fig.align='center', fig.cap="Figure 1.11", message=FALSE}
+# N.B. rootogram
+negative_binomial_rootogram <- rootogram(model.nb, ylab='Root Square of Frequency', main='Negative Binomial')
+```
+
+## Quasi-likelihood Model
+
+Another solution to work with overdispersion is to fit a quasi-likelihood model. By using this remedy, we are again distancing ourselves from the assumption of equality between the mean and variance of the Poisson model. In using the quasi-likelihood approach, we now specify them individually with the mean structure as:
+
+<h5 align="center">$E\left(Y\right)=\mu$</h5>
+
+And the variance as:
+
+<h5 align="center">$var\left(Y\right)=\phi\lambda$</h5>
+
+Where the dispersion parameter, $\phi$, is an indicator of the extent of dispersion in the model. It is important to note that the mean must be specified correctly, but it is not required for the variance to be correctly specified. Having fit the model to our data, we arrived at our output below (Table 1.6). Looking at our dispersion parameter we see that its value (1.746) is greater than 1 confirming our evidence that the model is overdispersed. Using that same statistic, we are able to determine that the variance is 74.6% larger than the mean in this quasi-likelihood model.
+
+```{r output QL model, echo=FALSE, fig.align='center'}
+#####################################
+##### FIT QUASI LIKELIHOOD MODEL ####
+#####################################
+# 7. Fit a Quasi-likelihood model.------
+
+# fit the quasi likelihood model
+model.abq <- glm(resp~race, family=quasipoisson, data=victim_data)
+summary(model.abq)
+```
+
+As in the previous two models, also here we found a statistically significant relationship between race and number of known homicide victims. Furthermore, we notice that unlike the Poisson model and the negative binomial model here we don’t have a value for the AIC. This is due to the fact that there is no likelihood in quasi models therefore we are unable to calculate an AIC. 
+
+We sought to compare both the negative binomial and quasi-likelihood models through a mean-variance relationship plot. Typically, with this plot we would be able to view the linear relationship of the quasi-likelihood model in comparison with the quadratic relationship of the negative binomial model. However, we only have two points plotted on our graph due to the fact that we are only provided with the mean and variance for two groups (black and white). With the inconclusive plot we decided that it was more effective to evaluate based on the proximity to the observed variance values. Based on the values seen below (Table 1.7), the Quasi-Likelihood is better in the sense of estimating the observed variance. However, it’s important to note that with such few points it’s difficult to gauge its efficiency in making predictions.
+
+```{r comparison of the dispersion by model, echo=FALSE, fig.align='center', fig.cap="Table 1.7"}
+# mean-var table
+m<-with(victim_data, tapply(resp,race,mean))
+v<-with(victim_data, tapply(resp,race,var))
+obs<-c(v)
+nb<-c(m*(1+m/model.nb$theta))
+qL<-c(summary(model.abq)$dispersion*m)
+tab_models<-data.frame(obs,nb,qL)
+      #nb vs qL to fit obs var
+# obs       nb        qL
+# black 1.1498288 1.868928 0.9112742
+# white 0.1552448 0.134322 0.1610475
+
+tab_models%>%
+  kbl(col.names = c("Observed", "Negative Binomial", "Quasi-likelihood")) %>%
+  kable_material(c("striped", "hover"))
+
+```
+
+
+## Conclusion
+
+Revisiting the original question of this analysis, “Does race help explain how many homicide victims a person knows?”, we see that the Poisson model suggested that race can help explain the number of known homicide victims. However, due to the assumption of equal mean and variance not holding up along with apparent overdispersion we concluded that this model was not sufficient in accurately answering our question. Both the negative binomial model and the quasi-likelihood model revealed to be better choices to model the frequency of known homicide victims as the assumption violations seen earlier were no longer an issue. The findings from both models in line with what we discovered in the Poisson model indicating that race can indeed help explain the number of known homicide victims.
+
+
+</div>
